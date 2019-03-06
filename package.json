@@ -10,6 +10,7 @@
     "react": "16.6.3",
     "react-native": "0.58.4",
     "react-native-cardview": "^2.0.2",
+    "react-native-collapse-view": "^1.0.0",
     "react-native-dropdown-menu": "^2.0.0",
     "react-native-image-header-scroll-view": "^0.10.0",
     "react-native-list-popover": "^1.1.1",

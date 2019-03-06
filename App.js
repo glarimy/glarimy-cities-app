@@ -20,15 +20,20 @@ export default class App extends Component {
     super(props);
     this.cityn='';
     this.catname='';
+    this.secname='';
     this.i='';
     this.k='';
+    this.id='';
     this.itemh=[],
     this.state={
       showSections: false,
+      showSecDetail: false,
       listshow:false,
       showCat:false,
       data:[],
       list:[], 
+      listmore:[],
+      num:0,
     };
   }
   componentDidMount() {
@@ -39,9 +44,6 @@ export default class App extends Component {
          data:res
        })     
       })
-  }
-
-  listdata = () =>{
     fetch('https://4r5qkqzk35.execute-api.us-east-1.amazonaws.com/v1/activecities/Tadepalligudem/Health/Hospitals/entry')
     .then(res => res.json())
     .then(res => {
@@ -49,20 +51,65 @@ export default class App extends Component {
         list:res
       })
     })
+
+
   }
+
   
    city =(item,index) =>{
      
     this.cityn=item.city;
+    this.catname='';
+    this.secname='';
     
-    this.setState({showCat:true});
+    this.setState({showSections:false});
+    this.setState({showSecDetail:false});
+    if(this.state.showCat === true)
+    {
+      this.setState({showCat:false});
+    }
+    else{
+      this.setState({showCat:true});
+    }
+    
    }
 
    cat=(item,index)=>{
      this.catname=item.category;
-     this.setState({showSections:true});
+     this.secname='';
+
+     this.setState({showSecDetail:false});
+     if(this.state.showSections === true)
+     {
+       this.setState({showSections:false});
+     }
+     else{
+       this.setState({showSections:true});
+     }
    }
    
+   secDetails=(item,index)=>{
+    this.secname=item.name;
+    if(this.state.showSecDetail === true)
+    {
+      this.setState({showSecDetail:false});
+    }
+    else{
+      this.setState({showSecDetail:true});
+    }
+  }
+
+  secMoreDetails=(item,index)=>{
+    this.id=item.id;
+    fetch('https://4r5qkqzk35.execute-api.us-east-1.amazonaws.com/v1/activecities/Tadepalligudem/Health/Hospitals/entry/'+this.id)
+    .then(res => res.json())
+    .then(res => {
+      this.setState({
+        listmore:res
+      })
+    })
+  }
+
   render()
    {
     return (
@@ -75,7 +122,7 @@ export default class App extends Component {
   horizontal
   data={this.state.data}
   renderItem={({item},index) =>{
-  
+    //console.log(item);
      if(item.category === "Default")
      {
       return <View style={{backgroundColor:"#696969",height:70,width:500}}>
@@ -97,12 +144,29 @@ export default class App extends Component {
   />
    </View> 
 
+
+   {(!this.state.showCat) &&  <FlatList
+  horizontal
+  data={this.state.data}
+  renderItem={({item},index) =>{
+    //console.log(this.cityn);
+    if(item.city === this.cityn && item.category != "Default" )
+    { 
+      this.setState({showCat:true});
+      return
+    }
+  }
+}
+  />}
+
+
    
    {(this.state.showCat) &&  <FlatList
   horizontal
   data={this.state.data}
   renderItem={({item},index) =>{
-
+    //console.log(this.cityn);
+    //console.log(item);
     if(item.city === this.cityn && item.category != "Default" )
     { 
       
@@ -122,53 +186,120 @@ export default class App extends Component {
 
       
     }
+  
   }
 
 }
   />}
 
-
-{(this.state.showSections) &&  <FlatList
+{(!this.state.showSections) &&  <FlatList
   horizontal
   data={this.state.data}
   renderItem={({item},index) =>{
 
-    if(item.category === this.catname  )
+    if(item.category === this.catname && item.city === this.cityn )
     {
-      
-      return <View style={{padding:10,flex:1}}>
-      <TouchableOpacity 
-      onPress={()=>{this.setState({showCat:true})}}>
-     
-         {
-           item.sections.map((e) => {
-           return <View><CardView  
-           cardElevation={2}
-           cardMaxElevation={2}
-           height={50}
-           cornerRadius={5}
-
-            ><Text>{e.name}</Text></CardView></View> 
-        })
-         }
-        
-          </TouchableOpacity>
-   </View>
-
+       
+      this.setState({showSections:true});
+      return
     }
   }
 
 }
   />}
 
-     
 
+
+{(this.state.showSections) &&  <FlatList
+  
+  data={this.state.data}
+  
+  renderItem={({item},index) =>{
+
+    if(item.category === this.catname  && item.city === this.cityn  )
+    {
+      var d= item.sections;    
+        
+      return <FlatList
+    horizontal
+  data={d}
+  renderItem={({item},index) =>{
+    
+     return  <View style={{padding:10,flexDirection:"row"}}>
+     <TouchableOpacity 
+      onPress={()=>this.secDetails(item,index)}>
+    <CardView
+        cardElevation={2}
+        cardMaxElevation={2}
+        height={50}
+        cornerRadius={5}>
+       <Text style={{fontSize:18,padding:15}}>{item.display}</Text>
+         </CardView></TouchableOpacity>
+  </View>
+   
+  }
+
+}
+  />
+    }
+    }
+  }
+  />}
+
+
+{(!this.state.showSecDetail) &&  <FlatList
+  horizontal
+  data={this.state.data}
+  renderItem={({item},index) =>{
+
+    if(item.category === this.catname && item.city === this.cityn && item.name === this.secname)
+    {
+       
+      this.setState({showSections:true});
+      return
+    }
+  }
+
+}
+  />}
+
+
+
+{(this.state.showSecDetail) &&  <FlatList
+  
+  data={this.state.list}
+  
+  renderItem={({item},index) =>{
+
+    if(item.category === this.catname  && item.city === this.cityn && item.section === this.secname )
+    {
+      
+     return  <View style={{padding:10,flexDirection:"row"}}>
+     <CardView
+        cardElevation={2}
+        cardMaxElevation={2}
+        height={180}
+        width={500}
+        cornerRadius={5}>
+       <Text style={{fontSize:20,padding:15}}>{item.name}</Text>
+       <Text style={{fontSize:13,padding:15,fontStyle:"italic"}}>{item.address}</Text>
+       <TouchableOpacity 
+      onPress={()=>this.secMoreDetails(item,index)}>
+       <Text style={{textAlign:"center"}}>more</Text>
+       </TouchableOpacity>
+         </CardView>
+        
+  </View>
+   
+  
+    }
+    }
+  }
+  />}
 
 
 
 </View>
-
-
   );
   
   }
@@ -195,3 +326,5 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
+
